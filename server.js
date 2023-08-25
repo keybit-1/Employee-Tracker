@@ -1,3 +1,5 @@
+const chalk = require('chalk');
+const figlet = require('figlet');
 const inquirer = require('inquirer');
 const {
     viewAllDepartments,
@@ -19,8 +21,29 @@ const {
     promptForUpdateRole
 } = require('./lib/inquirerPrompts');
 
+console.log(
+    chalk.cyan(
+        figlet.textSync('Employee Tracker', {
+            font: 'Standard',
+            horizontalLayout: 'default',
+            verticalLayout: 'default'
+        })
+    )
+);
+
 async function startApp() {
+    // Clear the console
+    console.clear();
+
+    // Display ASCII art banner
+    console.log(
+        chalk.yellow(
+            figlet.textSync('Employee Tracker', { horizontalLayout: 'full' })
+        )
+    );
+
     let inProgress = true;
+
 
     while (inProgress) {
         const { action } = await mainMenu();
