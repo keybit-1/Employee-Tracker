@@ -1,6 +1,8 @@
 const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
+const clear = require('clear');
+
 const {
     viewAllDepartments,
     viewAllRoles,
@@ -43,7 +45,6 @@ async function startApp() {
     );
 
     let inProgress = true;
-
 
     while (inProgress) {
         const { action } = await mainMenu();
