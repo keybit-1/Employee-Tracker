@@ -5,10 +5,19 @@ const {
     viewAllEmployees,
     addDepartment,
     addRole,
-    addEmployee
-    // ... import any other necessary functions
+    addEmployee,
+    deleteDepartment,
+    deleteRole,
+    deleteEmployee,
+    updateEmployeeRole
 } = require('./lib/dbQueries');
-const { mainMenu } = require('./lib/inquirerPrompts');
+const {
+    mainMenu,
+    promptForRole,
+    promptForEmployee,
+    promptForDelete,
+    promptForUpdateRole
+} = require('./lib/inquirerPrompts');
 
 async function startApp() {
     let inProgress = true;
@@ -16,93 +25,78 @@ async function startApp() {
     while (inProgress) {
         const { action } = await mainMenu();
 
-        switch (action) {
-            case 'View all departments':
-                const departments = await viewAllDepartments();
-                console.table(departments, ['id', 'name']);
-                break;
+        try {
+            switch (action) {
+                case 'View all departments':
+                    const departments = await viewAllDepartments();
+                    console.table(departments, ['id', 'name']);
+                    break;
 
-            case 'View all roles':
-                const roles = await viewAllRoles();
-                console.table(roles, ['id', 'title', 'salary', 'department_id']);
-                break;
+                case 'View all roles':
+                    const roles = await viewAllRoles();
+                    console.table(roles, ['id', 'title', 'salary', 'department_id']);
+                    break;
 
-            case 'View all employees':
-                const employees = await viewAllEmployees();
-                console.table(employees, ['id', 'first_name', 'last_name', 'role_id', 'manager_id']);
-                break;
+                case 'View all employees':
+                    const employees = await viewAllEmployees();
+                    console.table(employees, ['id', 'first_name', 'last_name', 'job_title', 'department', 'salary', 'manager']);
+                    break;                    
 
-            case 'Add a department':
-                const { name } = await inquirer.prompt({
-                    type: 'input',
-                    name: 'name',
-                    message: 'What is the name of the new department?'
-                });
-                await addDepartment(name);
-                console.log('Department added successfully!');
-                break;
+                case 'Add a department':
+                    const { name } = await inquirer.prompt({
+                        type: 'input',
+                        name: 'name',
+                        message: 'What is the name of the new department?'
+                    });
+                    await addDepartment(name);
+                    console.log('Department added successfully!');
+                    break;
 
-            case 'Add a role':
-                const roleData = await inquirer.prompt([
-                    {
-                        type: 'input',
-                        name: 'title',
-                        message: 'What is the title of the role?'
-                    },
-                    {
-                        type: 'input',
-                        name: 'salary',
-                        message: 'What is the salary of the role? (Enter numeric value only, e.g., 100000 for 100k)',
-                        validate: value => {
-                            const valid = !isNaN(parseFloat(value));
-                            return valid || 'Please enter a number';
-                        },
-                        filter: Number
-                    },
-                    {
-                        type: 'input',
-                        name: 'department_id',
-                        message: 'What is the department ID for this role?'
-                    }
-                ]);
-                await addRole(roleData.title, roleData.salary, roleData.department_id);
-                console.log('Role added successfully!');
-                break;
+                case 'Add a role':
+                    const roleData = await promptForRole();
+                    await addRole(roleData.title, roleData.salary, roleData.department_id);
+                    console.log('Role added successfully!');
+                    break;
 
-            case 'Add an employee':
-                const employeeData = await inquirer.prompt([
-                    {
-                        type: 'input',
-                        name: 'first_name',
-                        message: 'What is the first name of the employee?'
-                    },
-                    {
-                        type: 'input',
-                        name: 'last_name',
-                        message: 'What is the last name of the employee?'
-                    },
-                    {
-                        type: 'input',
-                        name: 'role_id',
-                        message: 'What is the role ID for this employee?'
-                    },
-                    {
-                        type: 'input',
-                        name: 'manager_id',
-                        message: 'What is the manager ID for this employee? (Leave empty if no manager)',
-                        default: null
-                    }
-                ]);
-                await addEmployee(employeeData.first_name, employeeData.last_name, employeeData.role_id, employeeData.manager_id);
-                console.log('Employee added successfully!');
-                break;
+                case 'Add an employee':
+                    const employeeData = await promptForEmployee();
+                    await addEmployee(employeeData.first_name, employeeData.last_name, employeeData.role_id, employeeData.manager_id);
+                    console.log('Employee added successfully!');
+                    break;
 
-            case 'Exit':
-                inProgress = false;
-                break;
+                case 'Delete a department':
+                    const deptId = await promptForDelete('department');
+                    await deleteDepartment(deptId.id);
+                    console.log('Department deleted successfully!');
+                    break;
 
-            default:
-                console.log('Action not recognized.');
+                case 'Delete a role':
+                    const roleId = await promptForDelete('role');
+                    await deleteRole(roleId.id);
+                    console.log('Role deleted successfully!');
+                    break;
+
+                case 'Delete an employee':
+                    const empId = await promptForDelete('employee');
+                    await deleteEmployee(empId.id);
+                    console.log('Employee deleted successfully!');
+                    break;
+
+                case 'Update an employee role':
+                    const { employee_id, new_role_id } = await promptForUpdateRole();
+                    await updateEmployeeRole(employee_id, new_role_id);
+                    console.log('Employee role updated successfully!');
+                    break;
+
+                case 'Exit':
+                    inProgress = false;
+                    break;
+
+                default:
+                    console.log('Action not recognized.');
+            }
+        } catch (error) {
+            console.error(`Error: ${error.message}`);
         }
     }
 
@@ -111,6 +105,8 @@ async function startApp() {
 }
 
 startApp();
+
+
 
 
 
